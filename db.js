@@ -2,7 +2,7 @@
 
 console.log("db.js: Script loaded successfully."); // <--- لاگ جدید برای بررسی بارگذاری
 
-import { supabase, getCurrentUserProfile } from './auth.js'; // وارد کردن supabase و getCurrentUserProfile از auth.js
+import { supabase, getCurrentUserProfile } from './auth_v2.js'; // وارد کردن supabase و getCurrentUserProfile از auth.js
 
 const CLOUDINARY_CLOUD_NAME = "dua53zgnk";
 const CLOUDINARY_UPLOAD_PRESET = "Iranrap";

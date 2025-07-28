@@ -1,4 +1,3 @@
-
 // battles.js - Logic for the Battle System with Debug Logs for Login (نسخه نهایی و ماژولار)
 
 console.log("battles.js: Script loaded successfully."); // <--- لاگ جدید برای بررسی بارگذاری
@@ -69,7 +68,8 @@ async function initializeBattlePage() {
         if (!session) {
             console.log("battles.js: No session found. Redirecting to login.html.");
             showMessage('برای دسترسی به میدان بتل، ابتدا وارد حساب کاربری خود شوید.', () => {
-                window.location.href = 'login.html'; 
+                // استفاده از URL کامل برای ریدایرکت
+                window.location.href = 'https://iranrapbattles.netlify.app/login.html'; 
             });
             hideLoading(); 
             return; 
@@ -83,7 +83,8 @@ async function initializeBattlePage() {
             console.log("battles.js: No current user profile found. Signing out and redirecting to login.html.");
             showMessage('خطا در بارگذاری اطلاعات کاربری. لطفاً دوباره وارد شوید.', async () => {
                 await signOutUser(); 
-                window.location.href = 'login.html'; 
+                // استفاده از URL کامل برای ریدایرکت
+                window.location.href = 'https://iranrapbattles.netlify.app/login.html'; 
             });
             hideLoading(); 
             return; 
@@ -981,4 +982,5 @@ if (initialBattleId) {
         document.querySelector(`[data-tab="${initialTab}"]`).classList.add('active');
     });
 }
+
 
