@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>میدان بتل رپ</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* Styles for the on-screen log output */
+        #on-screen-log-output {
+            background-color: #1a202c; /* Dark background for logs */
+            color: #e2e8f0; /* Light text color */
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 300px; /* Limit height to prevent taking up too much screen */
+            overflow-y: auto; /* Enable scrolling if logs exceed max-height */
+            font-family: monospace;
+            font-size: 0.8rem; /* Smaller font for mobile */
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            word-wrap: break-word; /* Break long words */
+            position: fixed; /* Fixed position so it's always visible */
+            bottom: 10px; /* Position at the bottom */
+            left: 10px;
+            right: 10px;
+            z-index: 1000; /* Ensure it's on top of other content */
+            border: 1px solid #4a5568; /* Subtle border */
+            opacity: 0.9; /* Slightly transparent */
+        }
+        .log-message {
+            margin-bottom: 3px;
+            line-height: 1.3;
+        }
+        .log-info { color: #a0aec0; } /* Gray */
+        .log-warn { color: #f6ad55; } /* Orange */
+        .log-error { color: #fc8181; } /* Red */
+        .log-group-header {
+            font-weight: bold;
+            color: #63b3ed; /* Blue */
+            cursor: pointer;
+            margin-top: 8px;
+            margin-bottom: 3px;
+        }
+        .log-group-content {
+            padding-right: 10px; /* Indent group content */
+            border-right: 1px solid #4a5568; /* Visual indicator for group */
+        }
+        .log-group-content.hidden {
+            display: none;
+        }
+    </style>
+
+    <script>
+        // Inline script to capture and display console logs on screen
+        const logOutputDiv = document.createElement('div');
+        logOutputDiv.id = 'on-screen-log-output';
+        logOutputDiv.innerHTML = '<p class="text-lg font-semibold mb-2">خروجی لاگ:</p>';
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.appendChild(logOutputDiv);
+        });
+
+        const originalConsoleLog = console.log;
+        const originalConsoleWarn = console.warn;
+        const originalConsoleError = console.error;
+        const originalConsoleGroupCollapsed = console.groupCollapsed;
+        const originalConsoleGroupEnd = console.groupEnd;
+
+        let currentGroupElement = null; // Tracks the current group div element
+
+        function appendLogToScreen(message, type = 'info', isGroupHeader = false, groupLabel = '') {
+            const logElement = document.createElement('div');
+            logElement.classList.add('log-message', `log-${type}`);
+            logElement.textContent = message;
+
+            if (isGroupHeader) {
+                logElement.classList.add('log-group-header');
+                logElement.textContent = groupLabel; // Set text to group label
+                const groupContentDiv = document.createElement('div');
+                groupContentDiv.classList.add('log-group-content', 'hidden');
+                logElement.appendChild(groupContentDiv);
+                logElement.onclick = () => {
+                    groupContentDiv.classList.toggle('hidden');
+                };
+                // Append header to the current active group or directly to the main log output
+                if (currentGroupElement) {
+                    currentGroupElement.appendChild(logElement);
+                } else {
+                    logOutputDiv.appendChild(logElement);
+                }
+                currentGroupElement = groupContentDiv; // Set this as the new active group
+            } else {
+                // Append message to the current active group or directly to the main log output
+                if (currentGroupElement) {
+                    currentGroupElement.appendChild(logElement);
+                } else {
+                    logOutputDiv.appendChild(logElement);
+                }
+            }
+            // Scroll to bottom
+            logOutputDiv.scrollTop = logOutputDiv.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalConsoleLog.apply(this, args);
+            appendLogToScreen(args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)).join(' '), 'info');
+        };
+
+        console.warn = function(...args) {
+            originalConsoleWarn.apply(this, args);
+            appendLogToScreen(args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)).join(' '), 'warn');
+        };
+
+        console.error = function(...args) {
+            originalConsoleError.apply(this, args);
+            appendLogToScreen(args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)).join(' '), 'error');
+        };
+
+        console.groupCollapsed = function(label) {
+            originalConsoleGroupCollapsed.apply(this, [label]);
+            appendLogToScreen('', 'info', true, label); // Create group header on screen
+        };
+
+        console.groupEnd = function() {
+            originalConsoleGroupEnd.apply(this);
+            // Move up to the parent group
+            if (currentGroupElement && currentGroupElement.parentElement && currentGroupElement.parentElement.closest('.log-group-content')) {
+                currentGroupElement = currentGroupElement.parentElement.closest('.log-group-content');
+            } else {
+                currentGroupElement = null; // Back to root
+            }
+        };
+
+        console.log("On-screen logging system initialized.");
+    </script>
+</head>
+<body class="bg-gradient-to-br from-gray-900 to-black text-gray-100 min-h-screen flex flex-col items-center p-4 font-inter">
+    <!-- Message Box -->
+    <div id="message-box" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-800 p-8 rounded-lg shadow-xl text-center max-w-sm w-full border border-purple-600">
+            <p id="message-text" class="text-lg mb-6 text-white"></p>
+            <button id="message-ok-btn" class="bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 px-6 rounded-lg transition duration-300 transform hover:scale-105">متوجه شدم</button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="flex flex-col items-center">
+            <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-16 w-16 mb-4"></div>
+            <p id="loading-text" class="text-white text-xl font-semibold">در حال بارگذاری...</p>
+        </div>
+    </div>
+
+    <div class="container bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-4xl border border-purple-700">
+        <h1 class="text-4xl font-bold text-center mb-8 text-purple-400">میدان بتل رپ</h1>
+
+        <!-- Tabs for Battle Categories -->
+        <div class="tabs flex justify-center space-x-4 mb-8">
+            <button class="tab-btn active bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-300" data-tab="pending-battles-tab">درخواست‌های در انتظار</button>
+            <button class="tab-btn bg-gray-700 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-300" data-tab="active-battles-tab">بتل‌های فعال</button>
+            <button class="tab-btn bg-gray-700 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-300" data-tab="completed-battles-tab">بتل‌های گذشته</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="pending-battles-tab" class="tab-content active p-6 bg-gray-700 rounded-lg shadow-inner mb-6">
+            <h2 class="text-2xl font-bold mb-4 text-purple-300">درخواست بتل جدید</h2>
+            <form id="request-battle-form" class="space-y-4">
+                <div>
+                    <label for="opponent-username" class="block text-sm font-medium text-gray-300 mb-1">نام کاربری حریف:</label>
+                    <input type="text" id="opponent-username" name="opponent-username" placeholder="نام کاربری حریف" required
+                           class="w-full p-3 rounded-md bg-gray-900 border border-gray-600 text-white focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <div>
+                    <label for="total-rounds" class="block text-sm font-medium text-gray-300 mb-1">تعداد راندها (1-5):</label>
+                    <input type="number" id="total-rounds" name="total-rounds" min="1" max="5" value="3" required
+                           class="w-full p-3 rounded-md bg-gray-900 border border-gray-600 text-white focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 transform hover:scale-105">ارسال درخواست بتل</button>
+            </form>
+
+            <h2 class="text-2xl font-bold mt-8 mb-4 text-purple-300">درخواست‌های در انتظار من</h2>
+            <ul id="pending-battles-list" class="space-y-4">
+                <!-- Pending battles will be loaded here -->
+            </ul>
+        </div>
+
+        <div id="active-battles-tab" class="tab-content p-6 bg-gray-700 rounded-lg shadow-inner hidden">
+            <h2 class="text-2xl font-bold mb-4 text-purple-300">بتل‌های فعال من</h2>
+            <ul id="active-battles-list" class="space-y-4">
+                <!-- Active battles will be loaded here -->
+            </ul>
+            <div id="active-battle-details-container" class="mt-8 p-4 bg-gray-800 rounded-lg border border-purple-600 hidden">
+                <!-- Active battle details (recorder, rounds, voting) will be rendered here -->
+            </div>
+        </div>
+
+        <div id="completed-battles-tab" class="tab-content p-6 bg-gray-700 rounded-lg shadow-inner hidden">
+            <h2 class="text-2xl font-bold mb-4 text-purple-300">بتل‌های گذشته من</h2>
+            <ul id="completed-battles-list" class="space-y-4">
+                <!-- Completed battles will be loaded here -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Supabase SDK باید قبل از هر فایل JS دیگری که از supabase استفاده می‌کند بارگذاری شود -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- فایل‌های ماژولار شما -->
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="db.js"></script>
+    <script type="module" src="battles.js"></script>
+    <!-- نیازی به login_page_logic.js در اینجا نیست، چون این صفحه اصلی بتل است. -->
+</body>
+</html>
